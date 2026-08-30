@@ -4,7 +4,6 @@
 > **Move anything. Anywhere.**  
 > A lightweight, self-hosted file and text transfer platform built for seamless cross-device sharing.
 
----
 
 ## ⚡ Overview
 
@@ -19,7 +18,7 @@ Instead of routing sensitive data through third-party cloud drives, RimCloud all
                                                 ▼
 [ Device B ] ◄──( Retrieve Content )──── [ Access Code ]
 
-```
+
 
 ---
 
