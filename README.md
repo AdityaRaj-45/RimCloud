@@ -1,4 +1,4 @@
-```markdown
+```text
 # RimCloud
 
 > **Move anything. Anywhere.**  
