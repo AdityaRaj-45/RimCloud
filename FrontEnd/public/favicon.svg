@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Radial Gradient -->
+    <radialGradient id="bgGlow" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#14171b"/>
+      <stop offset="60%" stop-color="#0b0d10"/>
+      <stop offset="100%" stop-color="#080a0d"/>
+    </radialGradient>
+
+    <!-- Chrome / White Gradient -->
+    <linearGradient id="whiteChrome" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="30%" stop-color="#f2f4f7"/>
+      <stop offset="70%" stop-color="#c4cbd5"/>
+      <stop offset="100%" stop-color="#8fa8c2"/>
+    </linearGradient>
+
+    <!-- Crimson Gradient -->
+    <linearGradient id="crimsonNeon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff4d63"/>
+      <stop offset="40%" stop-color="#df5263"/>
+      <stop offset="80%" stop-color="#b83245"/>
+      <stop offset="100%" stop-color="#8f2939"/>
+    </linearGradient>
+
+    <!-- Metallic Rim Gradient -->
+    <linearGradient id="rimMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f2f4f7"/>
+      <stop offset="25%" stop-color="#8fa8c2"/>
+      <stop offset="75%" stop-color="#292e35"/>
+      <stop offset="100%" stop-color="#14171b"/>
+    </linearGradient>
+
+    <!-- Glow & Depth Filters -->
+    <filter id="crimsonGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="elementShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.85"/>
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#8fa8c2" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Base Plate Container -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGlow)" stroke="#292e35" stroke-width="2"/>
+  
+  <!-- Outer Calibration / Orbital Rim -->
+  <circle cx="256" cy="256" r="214" fill="none" stroke="url(#rimMetal)" stroke-width="2.5" opacity="0.45"/>
+  <circle cx="256" cy="256" r="200" fill="none" stroke="#df5263" stroke-width="1" stroke-dasharray="8 12" stroke-opacity="0.25"/>
+
+  <!-- Compass Aperture Notches -->
+  <g stroke="url(#whiteChrome)" stroke-width="3" stroke-linecap="round" opacity="0.6">
+    <line x1="256" y1="32" x2="256" y2="48"/>
+    <line x1="256" y1="464" x2="256" y2="480"/>
+    <line x1="32" y1="256" x2="48" y2="256"/>
+    <line x1="464" y1="256" x2="480" y2="256"/>
+  </g>
+
+  <!-- Main Symbol Group -->
+  <g filter="url(#elementShadow)">
+
+    <!-- Modern Cyber Cloud Silhouette (Upper Arc) -->
+    <!-- Left White/Steel Arc -->
+    <path d="M 126 312
+             C 106 312, 90 294, 90 272
+             C 90 252, 104 234, 124 230
+             C 130 196, 160 168, 196 168
+             C 216 168, 234 176, 246 190"
+          fill="none"
+          stroke="url(#whiteChrome)"
+          stroke-width="14"
+          stroke-linecap="round"/>
+
+    <!-- Right Crimson Arc -->
+    <path d="M 266 190
+             C 278 176, 296 168, 316 168
+             C 352 168, 382 196, 388 230
+             C 408 234, 422 252, 422 272
+             C 422 294, 406 312, 386 312"
+          fill="none"
+          stroke="url(#crimsonNeon)"
+          stroke-width="14"
+          stroke-linecap="round"
+          filter="url(#crimsonGlow)"/>
+
+    <!-- Base Horizon Connectors -->
+    <line x1="96" y1="364" x2="182" y2="364" stroke="url(#whiteChrome)" stroke-width="6" stroke-linecap="round" opacity="0.4"/>
+    <line x1="330" y1="364" x2="416" y2="364" stroke="url(#crimsonNeon)" stroke-width="6" stroke-linecap="round" opacity="0.6"/>
+
+    <!-- Integrated Monogram: 'R' (White/Chrome) -->
+    <g fill="url(#whiteChrome)">
+      <!-- Vertical Stem -->
+      <path d="M 166 220 
+               L 198 220 
+               L 198 344 
+               L 166 344 Z"/>
+
+      <!-- Upper Loop -->
+      <path d="M 198 220 
+               L 242 220 
+               C 268 220, 284 234, 284 258 
+               C 284 280, 268 294, 242 294 
+               L 198 294 Z 
+               M 198 244 
+               L 198 270 
+               L 238 270 
+               C 250 270, 256 266, 256 257 
+               C 256 248, 250 244, 238 244 Z"/>
+
+      <!-- Angled Tail -->
+      <path d="M 228 286 
+               L 254 286 
+               L 288 344 
+               L 256 344 Z"/>
+    </g>
+
+    <!-- Integrated Monogram: 'C' (Crimson Neon) -->
+    <g filter="url(#crimsonGlow)">
+      <path d="M 374 246 
+               L 350 220 
+               C 332 220, 314 226, 300 240 
+               C 278 262, 272 294, 272 308 
+               C 272 322, 278 354, 300 376 
+               C 314 390, 332 396, 350 396 
+               L 374 370 
+               L 354 370 
+               C 340 370, 330 364, 320 352 
+               C 306 334, 302 314, 302 308 
+               C 302 302, 306 282, 320 264 
+               C 330 252, 340 246, 354 246 Z" 
+            fill="url(#crimsonNeon)"/>
+    </g>
+
+  </g>
+
+  <!-- Kinetic Central Fast-Upload Node Spark -->
+  <circle cx="256" cy="190" r="4" fill="#ffffff"/>
+  <circle cx="256" cy="190" r="12" fill="#df5263" opacity="0.3" filter="url(#crimsonGlow)"/>
+</svg>
