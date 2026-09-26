@@ -1,264 +1,149 @@
 # RimCloud
 
-> **Move anything. Anywhere.**  
-> A lightweight, self-hosted file and text transfer platform built for seamless cross-device sharing.
+RimCloud is a temporary file and text sharing app.
 
-## ⚡ Overview
+Current setup:
 
-**RimCloud** is a personal transfer service designed to make it easy to move files, code snippets, links, and text between different devices.
+- React and Vite frontend
+- Express and Mongoose backend
+- MongoDB Atlas for transfer metadata and text
+- Temporary local disk storage for files
+- One-hour transfer expiry and cleanup
+- QR codes and access codes for files and text
+- Image/video previews; other files show filename and download action
+- Email sharing disabled
 
-Instead of relying on third-party cloud drives, RimCloud will allow you to host your own transfer service. Upload a file or paste text, generate an access code, and retrieve it from another device.
-
-```text
-[ Device A ] ──( Upload File / Text )──► [ RimCloud Server ]
-                                                │
-                                       ( Generates Code )
-                                                ▼
-[ Device B ] ◄──( Retrieve Content )──── [ Access Code ]
-```
-
----
-
-## 🎯 Key Features
-
-### 📁 File Transfers
-
-- Drag-and-drop file upload interface.
-- Local file preview before uploading.
-- Support for single-file transfers.
-- File size validation.
-- Upload progress indicators.
-
-### 📝 Text & Snippet Sharing
-
-- Dedicated text workspace.
-- Share commands, links, code, notes, and other text.
-- Copy and clear controls.
-- Real-time character counter.
-- Clipboard support.
-
-### 🔑 Secure Retrieval
-
-- Short access codes for retrieving transfers.
-- QR code support for easier device-to-device retrieval.
-- Direct file downloads.
-- One-click text copying after retrieval.
-- Temporary transfers with automatic expiration.
-
----
-
-## 🛠 Tech Stack
-
-| Layer | Technologies |
-| --- | --- |
-| Frontend | React 19, Vite, Vanilla CSS |
-| Backend | Node.js, Express.js, REST API |
-| Database | MongoDB / Mongoose |
-| Storage | Local file storage |
-| Security | Rate limiting, access codes, TTL expiration |
-| Deployment | Docker, Docker Compose |
-
-The backend, database, storage, and deployment systems are planned for upcoming development stages.
-
----
-
-## 🚦 Roadmap & Project Status
-
-RimCloud is being developed in multiple phases.
-
-### Phase 1: Frontend
-
-- [x] Modern dark-themed interface
-- [x] Responsive layout
-- [x] File and text workspace switcher
-- [x] File dropzone
-- [x] Text editor
-- [x] Copy and clear controls
-- [x] Character counter
-- [x] Access code interface
-- [x] QR code interface
-- [x] Toast notifications
-- [x] Transfer UI states
-
-### Phase 2: Backend
-
-- [ ] Node.js and Express server
-- [ ] REST API
-- [ ] File upload endpoint
-- [ ] Text upload endpoint
-- [ ] File retrieval endpoint
-- [ ] Text retrieval endpoint
-- [ ] Automatic access-code generation
-- [ ] Transfer identification and management
-- [ ] File size and payload validation
-
-### Phase 3: Storage & Lifecycle
-
-- [ ] MongoDB integration
-- [ ] Temporary transfer storage
-- [ ] Automatic transfer expiration
-- [ ] TTL cleanup system
-- [ ] File storage management
-- [ ] Transfer status tracking
-
-### Phase 4: Security
-
-- [ ] Rate limiting
-- [ ] Abuse protection
-- [ ] Secure access-code generation
-- [ ] Input validation
-- [ ] Upload restrictions
-- [ ] Secure file retrieval
-- [ ] Environment-based configuration
-
-### Phase 5: Deployment
-
-- [ ] Docker configuration
-- [ ] Docker Compose setup
-- [ ] Production environment configuration
-- [ ] Self-hosting documentation
-- [ ] Deployment documentation
-
----
-
-## 🔄 How RimCloud Will Work
-
-The planned workflow is:
+## Layout
 
 ```text
-Device A
-   │
-   │ Upload file / text
-   ▼
-RimCloud Backend
-   │
-   ├── Store content
-   │
-   ├── Generate access code
-   │
-   └── Set expiration time
-   │
-   ▼
-Access Code
-   │
-   │ Enter code on Device B
-   ▼
-RimCloud Backend
-   │
-   ▼
-Device B
-   │
-   └── Retrieve file / text
+FrontEnd/       React/Vite app
+backend-local/  MongoDB Atlas + local storage backend for testing
+backend/        MongoDB Atlas + Cloudflare R2 backend for later use
 ```
 
-For example:
+Use only `backend-local/` for the current local file-transfer workflow.
 
-```text
-Laptop
-   │
-   │ Upload just.zip
-   ▼
-RimCloud
-   │
-   │ Code: 5183
-   ▼
-Phone
-   │
-   │ Enter 5183
-   ▼
-Download just.zip
+## MongoDB Atlas
+
+1. Create an Atlas cluster and database user.
+2. Give the user read/write access.
+3. In **Network Access**, add your current IP address.
+4. Copy the Node.js driver connection string.
+5. Replace `<db_password>` with the real password and URL-encode special characters such as `#` as `%23`.
+
+Example:
+
+```env
+MONGO_URI=mongodb+srv://USERNAME:PASSWORD@CLUSTER.mongodb.net/rimcloud?retryWrites=true&w=majority
 ```
 
----
+## Run Locally
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js 18 or higher
-- npm
-
-### Frontend Setup
-
-Clone the repository:
+Configure `backend-local/.env`:
 
 ```bash
-git clone https://github.com/AdityaRaj-45/RimCloud.git
-cd RimCloud/FrontEnd
-```
-
-Install dependencies:
-
-```bash
-npm install
-```
-
-Create your environment file:
-
-```bash
+cd backend-local
 cp .env.example .env
 ```
 
-Start the development server:
+Set `MONGO_URI`. The important values are:
+
+```env
+PORT=5000
+TRANSFER_TTL_HOURS=1
+MAX_FILE_SIZE_MB=100
+STORAGE_DIR=./storage
+```
+
+Start the backend:
 
 ```bash
+cd backend-local
+npm install
 npm run dev
 ```
 
-The frontend will be available at:
+Expected output:
 
 ```text
-http://localhost:5173
+MongoDB Atlas connected
+Local backend listening on port 5000
 ```
 
----
+Configure `FrontEnd/.env`:
 
-## 📂 Project Structure
-
-```text
-RimCloud/
-│
-├── Backend/
-│   └── Backend code will be added here
-│
-├── FrontEnd/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── services/
-│   │   ├── App.jsx
-│   │   ├── App.css
-│   │   └── main.jsx
-│   │
-│   ├── .env.example
-│   ├── index.html
-│   ├── package.json
-│   └── vite.config.js
-│
-├── .gitignore
-└── README.md
+```env
+VITE_API_URL=http://localhost:5000
 ```
 
----
+Start the frontend in a second terminal:
 
-## 🔐 Privacy & Expiration
+```bash
+cd FrontEnd
+npm install
+npm run dev
+```
 
-RimCloud is intended to be a self-hosted transfer service.
+Open `http://localhost:5173`.
 
-The planned backend will use temporary transfers so that uploaded content does not remain available indefinitely.
+Test the backend:
 
-Transfers will eventually support configurable expiration and automatic cleanup.
+```bash
+curl http://localhost:5000/health
+```
 
----
+New transfers expire after one hour. Cleanup runs every minute while the backend is running, deletes files from `backend-local/storage/`, and deletes their MongoDB Atlas records.
 
-## 📌 Current Status
+## Checks
 
-The frontend is currently the main completed part of the project.
+```bash
+cd FrontEnd
+npm run build
+npm run lint
+```
 
-The interface and client-side experience are being developed first. Backend development will be added in the next stage, connecting the existing frontend to the transfer server and storage system.
+## GitHub Upload
 
----
+Create an empty GitHub repository, then from the project root:
 
-## 📄 License
+```bash
+git add .gitignore README.md FrontEnd backend-local
+git status
+git commit -m "Add local file transfer backend and frontend"
+git branch -M main
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+git push -u origin main
+```
 
-This project is open source and available under the MIT License.
+Do not commit `.env`, `node_modules`, `dist`, or `storage` files. They are ignored by the repository rules.
+
+If the GitHub branch already contains commits:
+
+```bash
+git stash push -u -m "backup before syncing"
+git pull --rebase origin main
+git stash pop
+git add .gitignore README.md FrontEnd backend-local
+git commit -m "Add local file transfer backend and frontend"
+git push -u origin main
+```
+
+Resolve README conflicts by keeping this current README, then run `git add README.md` and `git rebase --continue`.
+
+## Hosting
+
+Deploy the frontend to Vercel:
+
+1. Import the GitHub repository.
+2. Set root directory to `FrontEnd`.
+3. Build command: `npm run build`.
+4. Output directory: `dist`.
+5. Add `VITE_API_URL` with the public backend URL.
+
+Do not use Vercel for durable `backend-local/storage` files. Serverless filesystems are temporary.
+
+For a demo, run `backend-local` on your own machine and expose port 5000 with a tunnel. For a real deployment, use a persistent backend host such as Render, Railway, Fly.io, or a VPS, and move file storage to Cloudflare R2. The existing `backend/` directory is the later R2 version.
+
+## Security
+
+Never publish MongoDB passwords, API keys, `.env` files, or uploaded files. If a database password is exposed, rotate it in MongoDB Atlas immediately.

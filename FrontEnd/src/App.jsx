@@ -12,9 +12,7 @@ import Toast from "./components/ui/Toast";
 import {
   uploadFile,
   createText,
-  getText,
-  sendFileEmail,
-  sendTextEmail,
+  getTransfer,
 } from "./services/api";
 
 import "./App.css";
@@ -35,9 +33,6 @@ function App() {
 
   const [toast, setToast] = useState(null);
 
-  const [emailLoading, setEmailLoading] = useState(false);
-
-  const [retrievedText, setRetrievedText] = useState("");
   useEffect(() => {
   function handleCopyCut(event) {
     const target = event.target;
@@ -147,7 +142,6 @@ function App() {
     setShareData(null);
     setSelectedFile(null);
     setUploadProgress(0);
-    setRetrievedText("");
   }
 
   async function handleFileSelected(file) {
@@ -186,9 +180,12 @@ function App() {
 
       setShareData({
         type: "file",
-        url: data.file,
+        code: data.code,
+        qrCode: data.qrCode,
+        url: data.url,
         fileName: selectedFile.name,
         fileSize: selectedFile.size,
+        downloadUrl: data.files?.[0]?.downloadUrl,
       });
 
       showToast("Upload complete");
@@ -221,7 +218,7 @@ function App() {
         type: "text",
         code: data.code,
         qrCode: data.qrCode,
-        url: `${import.meta.env.VITE_API_URL}/api/text/${data.code}`,
+        url: data.url,
       });
 
       showToast("Access code generated");
@@ -244,58 +241,30 @@ function App() {
     }
 
     try {
-      const data = await getText(code.trim());
+      const data = await getTransfer(code.trim());
 
-      setRetrievedText(data.text);
-      setText(data.text);
+      if (data.type === "text") {
+        setMode("text");
+        setText(data.text);
+      } else if (data.type === "file" && data.files?.[0]) {
+        const file = data.files[0];
+        setMode("file");
+        setShareData({
+          type: "file",
+          code: data.code,
+          url: `${import.meta.env.VITE_API_URL}/api/transfers/${data.code}`,
+          fileName: file.name,
+          fileSize: file.size,
+          downloadUrl: file.downloadUrl,
+        });
+      }
 
-      showToast("Text retrieved");
-    } catch (error) {
+      showToast(data.type === "file" ? "File retrieved" : "Text retrieved");
+    } catch {
       showToast(
         "That code doesn't exist or has expired.",
         "error"
       );
-    }
-  }
-
-  async function handleSendEmail({
-    from,
-    to,
-  }) {
-    if (!shareData) {
-      showToast("Create a transfer first", "error");
-      return;
-    }
-
-    setEmailLoading(true);
-
-    try {
-      if (shareData.type === "file") {
-        const uuid = shareData.url.split("/").pop();
-
-        await sendFileEmail({
-          uuid,
-          emailTo: to,
-          emailFrom: from,
-        });
-      } else {
-        await sendTextEmail({
-          code: shareData.code,
-          emailTo: to,
-          emailFrom: from,
-        });
-      }
-
-      showToast("Transfer sent successfully");
-    } catch (error) {
-      console.error(error);
-
-      showToast(
-        "Couldn't send the email",
-        "error"
-      );
-    } finally {
-      setEmailLoading(false);
     }
   }
 
@@ -304,7 +273,6 @@ function App() {
     setShareData(null);
     setUploadProgress(0);
     setText("");
-    setRetrievedText("");
   }
 
   return (
@@ -355,13 +323,12 @@ function App() {
             <RetrieveTransfer
               onRetrieve={handleRetrieveText}
               loading={false}
+              mode={mode}
             />
           )}
           {shareData && (
             <ShareResult
               data={shareData}
-              onSendEmail={handleSendEmail}
-              emailLoading={emailLoading}
               onReset={handleReset}
             />
           )}

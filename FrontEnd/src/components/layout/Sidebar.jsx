@@ -51,7 +51,7 @@ function Sidebar({ mode, onModeChange }) {
           <strong>Private by default</strong>
 
           <small>
-            Links expire after 24 hours
+            Links expire after 1 hour
           </small>
         </div>
       </div>

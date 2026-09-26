@@ -3,17 +3,13 @@ import { useState } from "react";
 import {
   Check,
   Copy,
-  Mail,
+  Download,
   QrCode,
   RotateCcw,
-  Send,
   Link,
 } from "lucide-react";
-import EmailForm from "../sharing/EmailForm";
 function ShareResult({
   data,
-  onSendEmail,
-  emailLoading,
   onReset,
 }) {
   const [copied, setCopied] = useState(false);
@@ -73,6 +69,16 @@ function ShareResult({
                 Ready for sharing
               </span>
             </div>
+
+            {data.downloadUrl && (
+              <a
+                className="file-download-btn"
+                href={data.downloadUrl}
+              >
+                <Download size={14} />
+                Download
+              </a>
+            )}
           </div>
         </div>
       )}
@@ -86,7 +92,7 @@ function ShareResult({
           </b>
 
           <span>
-            Expires in 24 hours
+            Expires in 1 hour
           </span>
         </div>
 
@@ -110,7 +116,7 @@ function ShareResult({
         </div>
       </div>
 
-      {data.type === "text" && (
+      {(data.type === "text" || data.type === "file") && (
         <div className="text-share-result">
           <div className="qr-card">
             <div className="qr-title">
@@ -151,19 +157,6 @@ function ShareResult({
           </div>
         </div>
       )}
-
-      <div className="divider">
-        <span>
-          <Mail size={13} />
-
-          or send it by email
-        </span>
-      </div>
-
-      <EmailForm
-        onSubmit={onSendEmail}
-        loading={emailLoading}
-      />
 
       <button
         className="new-transfer"

@@ -815,6 +815,25 @@
   color: var(--muted);
   font-size: 9px;
 }
+.file-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  padding: 8px 11px;
+  border: 1px solid #4a2530;
+  border-radius: 8px;
+  background: #2a151c;
+  color: #f0a2ae;
+  font-size: 10px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.file-download-btn:hover {
+  background: var(--crimson-dark);
+  color: white;
+}
 /* Share Link */
 .share-label {
   display: flex;
@@ -921,6 +940,27 @@
   font-size: 29px;
   letter-spacing: 5px;
 }
+.new-transfer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  margin-top: 22px;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  background: #191d22;
+  color: var(--silver-light);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 800;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.new-transfer:hover {
+  border-color: var(--steel);
+  background: #242a30;
+}
 /* Divider */
 .divider {
   display: flex;
@@ -943,66 +983,50 @@
   gap: 5px;
   white-space: nowrap;
 }
-/* Email Form */
-.email-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr auto;
-  gap: 9px;
-}
-.field {
-  padding: 8px 11px;
-  border: 1px solid #30363e;
-  border-radius: 10px;
-  background: #15191d;
-  transition: border-color 0.2s ease;
-}
-.field:focus-within {
-  border-color: var(--steel);
-}
-.field label {
-  display: block;
-  margin-bottom: 3px;
-  color: #747d88;
-  font-family: "DM Mono", monospace;
-  font-size: 8px;
-  letter-spacing: 1px;
-}
-.field input {
-  width: 100%;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  color: #e1e5ea;
-  font-size: 11px;
-}
-.field input::placeholder {
-  color: #555d66;
-}
-.send-btn {
-  min-width: 145px;
-}
-.new-transfer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
-  margin-top: 17px;
-  padding: 10px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: transparent;
-  color: #7d8691;
-  cursor: pointer;
-  font-size: 9px;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-.new-transfer:hover {
-  background: #1a1e23;
-  color: white;
-  border-color: var(--border-light);
-}
 /* Toast */
+@media (max-width: 520px) {
+  .sidebar {
+    padding: 10px 12px;
+  }
+  .brand-logo {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    min-height: 42px;
+    border-radius: 11px;
+  }
+  .brand span {
+    font-size: 17px;
+  }
+  .sidebar nav {
+    gap: 2px;
+  }
+  .nav-item {
+    min-width: 42px;
+    min-height: 42px;
+    justify-content: center;
+    padding: 9px;
+  }
+  .main-content {
+    padding-top: 18px;
+  }
+  .topbar h1 {
+    max-width: 330px;
+    font-size: 25px;
+    letter-spacing: -1px;
+  }
+  .workspace-card {
+    padding: 8px;
+  }
+  .link-field input {
+    min-width: 0;
+    font-size: 11px;
+  }
+  .code-card strong {
+    font-size: 24px;
+    letter-spacing: 3px;
+  }
+}
 .toast {
   position: fixed;
   left: 50%;
@@ -1181,12 +1205,6 @@
   }
   .qr-card {
     width: 150px;
-  }
-  .email-form {
-    grid-template-columns: 1fr;
-  }
-  .send-btn {
-    width: 100%;
   }
   .progress-footer {
     flex-direction: column;

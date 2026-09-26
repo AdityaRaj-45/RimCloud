@@ -18,7 +18,7 @@ export async function uploadFile(file, onProgress) {
       if (xhr.status >= 200 && xhr.status < 300) {
         try {
           resolve(JSON.parse(xhr.responseText));
-        } catch (error) {
+        } catch {
           reject(new Error("Failed to parse response JSON"));
         }
         return;
@@ -62,33 +62,13 @@ export async function getText(id) {
   return response.json();
 }
 
-export async function sendFileEmail({ uuid, emailTo, emailFrom }) {
-  const response = await fetch(`${API_URL}/api/files/send`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ uuid, emailTo, emailFrom }),
+export async function getTransfer(code) {
+  const response = await fetch(`${API_URL}/api/transfers/${code}`, {
+    headers: { Accept: "application/json" },
   });
 
   if (!response.ok) {
-    throw new Error("Failed to send email");
-  }
-
-  return response.json();
-}
-
-export async function sendTextEmail({ code, emailTo, emailFrom }) {
-  const response = await fetch(`${API_URL}/api/text/send`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ code, emailTo, emailFrom }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to send email");
+    throw new Error("Transfer not found or expired");
   }
 
   return response.json();
