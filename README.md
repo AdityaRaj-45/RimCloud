@@ -1,149 +1,113 @@
-# RimCloud
+# ☁️ RimCloud
 
-RimCloud is a temporary file and text sharing app.
+**RimCloud** is a temporary file and text-sharing platform built for quickly moving content between devices.
 
-Current setup:
+Share a file or text, generate an access code or QR code, and open it from another device. Transfers automatically expire after a limited period.
 
-- React and Vite frontend
-- Express and Mongoose backend
-- MongoDB Atlas for transfer metadata and text
-- Temporary local disk storage for files
-- One-hour transfer expiry and cleanup
-- QR codes and access codes for files and text
-- Image/video previews; other files show filename and download action
-- Email sharing disabled
+## ✨ Features
 
-## Layout
+* 📁 Temporary file sharing
+* 📝 Temporary text sharing
+* 📱 QR-code based sharing
+* 🔑 Simple access codes
+* ⏱️ Automatic transfer expiration
+* 🖼️ Image previews
+* 🎥 Video previews
+* 📄 File download support
+* 💻 Cross-device sharing
+* 🧹 Automatic cleanup of expired transfers
 
-```text
-FrontEnd/       React/Vite app
-backend-local/  MongoDB Atlas + local storage backend for testing
-backend/        MongoDB Atlas + Cloudflare R2 backend for later use
-```
-
-Use only `backend-local/` for the current local file-transfer workflow.
-
-## MongoDB Atlas
-
-1. Create an Atlas cluster and database user.
-2. Give the user read/write access.
-3. In **Network Access**, add your current IP address.
-4. Copy the Node.js driver connection string.
-5. Replace `<db_password>` with the real password and URL-encode special characters such as `#` as `%23`.
-
-Example:
-
-```env
-MONGO_URI=mongodb+srv://USERNAME:PASSWORD@CLUSTER.mongodb.net/rimcloud?retryWrites=true&w=majority
-```
-
-## Run Locally
-
-Configure `backend-local/.env`:
-
-```bash
-cd backend-local
-cp .env.example .env
-```
-
-Set `MONGO_URI`. The important values are:
-
-```env
-PORT=5000
-TRANSFER_TTL_HOURS=1
-MAX_FILE_SIZE_MB=100
-STORAGE_DIR=./storage
-```
-
-Start the backend:
-
-```bash
-cd backend-local
-npm install
-npm run dev
-```
-
-Expected output:
+## 🚀 How It Works
 
 ```text
-MongoDB Atlas connected
-Local backend listening on port 5000
+Upload a file
+      │
+      ▼
+Generate sharing code / QR
+      │
+      ▼
+Open on another device
+      │
+      ▼
+View or download
+      │
+      ▼
+Transfer automatically expires
 ```
 
-Configure `FrontEnd/.env`:
+## 📸 Screenshots
 
-```env
-VITE_API_URL=http://localhost:5000
-```
+*Add screenshots of the application here.*
 
-Start the frontend in a second terminal:
+### Home
 
-```bash
-cd FrontEnd
-npm install
-npm run dev
-```
+*Add screenshot.*
 
-Open `http://localhost:5173`.
+### File Sharing
 
-Test the backend:
+*Add screenshot.*
 
-```bash
-curl http://localhost:5000/health
-```
+### Text Sharing
 
-New transfers expire after one hour. Cleanup runs every minute while the backend is running, deletes files from `backend-local/storage/`, and deletes their MongoDB Atlas records.
+*Add screenshot.*
 
-## Checks
+### Receiving a Transfer
 
-```bash
-cd FrontEnd
-npm run build
-npm run lint
-```
+*Add screenshot.*
 
-## GitHub Upload
+## 🎯 Use Cases
 
-Create an empty GitHub repository, then from the project root:
+RimCloud is useful when you need to quickly transfer something between devices without:
 
-```bash
-git add .gitignore README.md FrontEnd backend-local
-git status
-git commit -m "Add local file transfer backend and frontend"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
-git push -u origin main
-```
+* Sending yourself an email
+* Connecting a USB drive
+* Creating a permanent cloud-storage link
+* Signing into the same account on another device
 
-Do not commit `.env`, `node_modules`, `dist`, or `storage` files. They are ignored by the repository rules.
+For example:
 
-If the GitHub branch already contains commits:
+> You have a file on your laptop and want it on your phone.
+> Open RimCloud, share the file, scan the QR code from your phone, and download it.
 
-```bash
-git stash push -u -m "backup before syncing"
-git pull --rebase origin main
-git stash pop
-git add .gitignore README.md FrontEnd backend-local
-git commit -m "Add local file transfer backend and frontend"
-git push -u origin main
-```
+## 🔐 Privacy & Temporary Sharing
 
-Resolve README conflicts by keeping this current README, then run `git add README.md` and `git rebase --continue`.
+RimCloud is designed around **temporary transfers**.
 
-## Hosting
+Shared content is not intended to remain available indefinitely. Transfers automatically expire after a limited period, reducing unnecessary long-term storage of shared content.
 
-Deploy the frontend to Vercel:
+Users should still avoid uploading highly sensitive or confidential information.
 
-1. Import the GitHub repository.
-2. Set root directory to `FrontEnd`.
-3. Build command: `npm run build`.
-4. Output directory: `dist`.
-5. Add `VITE_API_URL` with the public backend URL.
+## 🛣️ Roadmap
 
-Do not use Vercel for durable `backend-local/storage` files. Serverless filesystems are temporary.
+* [x] File sharing
+* [x] Text sharing
+* [x] QR-code sharing
+* [x] Access codes
+* [x] Image previews
+* [x] Video previews
+* [x] Automatic expiration
+* [ ] Improved upload experience
+* [ ] Improved mobile experience
+* [ ] Production storage infrastructure
+* [ ] Additional file-handling improvements
+* [ ] Further security hardening
 
-For a demo, run `backend-local` on your own machine and expose port 5000 with a tunnel. For a real deployment, use a persistent backend host such as Render, Railway, Fly.io, or a VPS, and move file storage to Cloudflare R2. The existing `backend/` directory is the later R2 version.
+## 🤝 Contributing
 
-## Security
+Contributions, suggestions, and bug reports are welcome.
 
-Never publish MongoDB passwords, API keys, `.env` files, or uploaded files. If a database password is exposed, rotate it in MongoDB Atlas immediately.
+If you find a problem or have an idea for improving RimCloud, feel free to open an issue.
+
+## 📄 License
+
+This project is licensed under the terms specified in the repository's license.
+
+---
+
+<div align="center">
+
+### ☁️ RimCloud
+
+**Share it. Scan it. Get it.**
+
+</div>
