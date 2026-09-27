@@ -13,8 +13,10 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: env.origins,
+  origin: "https://rimcloud.vercel.app",
   credentials: true,
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
