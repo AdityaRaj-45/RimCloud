@@ -18,7 +18,9 @@ function renderFilePage(transfer, file) {
   const mimeType = file.mimeType || "application/octet-stream";
   const preview = mimeType.startsWith("image/")
     ? `<img src="${downloadUrl}?inline=1" alt="${name}">`
-    : "";
+    : mimeType.startsWith("video/")
+      ? `<video controls playsinline preload="metadata" src="${downloadUrl}?inline=1"></video>`
+      : "";
 
   return `<!doctype html>
 <html lang="en">
@@ -31,14 +33,15 @@ function renderFilePage(transfer, file) {
     * { box-sizing: border-box; }
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #090b0e; color: #f4f5f7; font: 15px system-ui, sans-serif; }
     .shell { width: min(760px, 100%); padding: 28px; border: 1px solid #2a2e36; border-radius: 16px; background: #14171b; box-shadow: 0 24px 70px #0008; }
-    .eyebrow { margin: 0 0 22px; color: #8e98a8; font-size: 11px; letter-spacing: .16em; }
+    .eyebrow { margin: 0 0 18px; color: #8e98a8; font-size: 11px; letter-spacing: .16em; }
     h1 { margin: 0; font-size: clamp(20px, 4vw, 30px); overflow-wrap: anywhere; }
-    .meta { margin: 9px 0 22px; color: #8e98a8; }
-    img, video { display: block; width: 100%; max-height: 62vh; object-fit: contain; border-radius: 10px; background: #090b0e; }
-    .file-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px; border: 1px solid #30353e; border-radius: 10px; }
-    .file-row strong { overflow-wrap: anywhere; }
-    .download { display: inline-block; flex: 0 0 auto; padding: 11px 17px; border-radius: 8px; background: #c9324a; color: white; text-decoration: none; font-weight: 700; }
-    @media (max-width: 560px) { .file-row { align-items: stretch; flex-direction: column; } .download { text-align: center; } }
+    .meta { margin: 8px 0 18px; color: #8e98a8; overflow-wrap: anywhere; }
+    .preview { margin-bottom: 16px; overflow: hidden; border: 1px solid #30353e; border-radius: 10px; background: #090b0e; }
+    img, video { display: block; width: 100%; max-height: 68vh; object-fit: contain; background: #090b0e; }
+    .file-row { margin-bottom: 16px; padding: 15px; border: 1px solid #30353e; border-radius: 10px; overflow-wrap: anywhere; }
+    .download { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 46px; padding: 11px 17px; border-radius: 8px; background: #e9edf4; color: #10151e; text-decoration: none; font-weight: 700; }
+    .download:hover { background: #fff; }
+    @media (max-width: 560px) { body { padding: 14px; } .shell { padding: 18px; } }
   </style>
 </head>
 <body>
@@ -46,7 +49,8 @@ function renderFilePage(transfer, file) {
     <p class="eyebrow">RIMCLOUD · FILE TRANSFER</p>
     <h1>${name}</h1>
     <p class="meta">${escapeHtml(mimeType)} · ${file.size} bytes</p>
-    ${preview || `<div class="file-row"><strong>${name}</strong><a class="download" href="${downloadUrl}">Download</a></div>`}
+    ${preview ? `<div class="preview">${preview}</div>` : `<div class="file-row">${name}</div>`}
+    <a class="download" href="${downloadUrl}" download>Download file</a>
   </main>
 </body>
 </html>`;
@@ -68,7 +72,7 @@ export async function downloadFile(req, res, next) {
     if (!file) return res.status(404).json({ error: "File not found or transfer expired" });
     file.downloads += 1;
     await transfer.save();
-    if (req.query.inline === "1" && file.mimeType?.startsWith("image/")) {
+    if (req.query.inline === "1" && (file.mimeType?.startsWith("image/") || file.mimeType?.startsWith("video/"))) {
       res.type(file.mimeType);
       res.setHeader("Content-Disposition", `inline; filename*=UTF-8''${encodeURIComponent(file.originalName)}`);
       return res.sendFile(file.path, (error) => { if (error && !res.headersSent) next(error); });

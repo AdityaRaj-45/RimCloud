@@ -14,7 +14,7 @@ function Header() {
         </h1>
 
         <p className="header-description">
-          A private link for every file you send.
+          Private file and text transfers.
         </p>
       </div>
 

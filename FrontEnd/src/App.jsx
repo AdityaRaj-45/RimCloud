@@ -1,7 +1,9 @@
 import { useState } from "react";
 import Sidebar from "./components/layout/Sidebar";
 import Header from "./components/layout/Header";
+import ModeSwitcher from "./components/transfer/ModeSwitcher";
 import FileDropzone from "./components/transfer/FileDropZone";
+import TextEditor from "./components/transfer/TextEditor";
 import RetrieveTransfer from "./components/transfer/RetrieveTransfer";
 import UploadProgress from "./components/transfer/UploadProgress";
 import ShareResult from "./components/transfer/ShareResult";
@@ -9,6 +11,7 @@ import Toast from "./components/ui/Toast";
 
 import {
   uploadFile,
+  createText,
   getTransfer,
 } from "./services/api";
 
@@ -16,12 +19,15 @@ import "./App.css";
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
 function App() {
+  const [mode, setMode] = useState("file");
   const [selectedFile, setSelectedFile] = useState(null);
 
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const [shareData, setShareData] = useState(null);
+  const [text, setText] = useState("");
+  const [textLoading, setTextLoading] = useState(false);
 
   const [toast, setToast] = useState(null);
 
@@ -34,6 +40,13 @@ function App() {
     setTimeout(() => {
       setToast(null);
     }, 2500);
+  }
+
+  function handleModeChange(newMode) {
+    setMode(newMode);
+    setShareData(null);
+    setSelectedFile(null);
+    setUploadProgress(0);
   }
 
   async function handleFileSelected(file) {
@@ -93,7 +106,34 @@ function App() {
     }
   }
 
-  async function handleRetrieveFile(code) {
+  async function handleGenerateText() {
+    const trimmedText = text.trim();
+
+    if (!trimmedText) {
+      showToast("Enter some text first", "error");
+      return;
+    }
+
+    setTextLoading(true);
+
+    try {
+      const data = await createText(trimmedText);
+      setShareData({
+        type: "text",
+        code: data.code,
+        qrCode: data.qrCode,
+        url: data.url,
+      });
+      showToast("Access code generated");
+    } catch (error) {
+      console.error(error);
+      showToast("Couldn't generate access code", "error");
+    } finally {
+      setTextLoading(false);
+    }
+  }
+
+  async function handleRetrieveTransfer(code) {
     if (!code.trim()) {
       showToast("Enter an access code", "error");
       return;
@@ -102,8 +142,13 @@ function App() {
     try {
       const data = await getTransfer(code.trim());
 
-      if (data.type === "file" && data.files?.[0]) {
+      if (data.type === "text") {
+        setMode("text");
+        setText(data.text || "");
+        showToast("Text retrieved");
+      } else if (data.type === "file" && data.files?.[0]) {
         const file = data.files[0];
+        setMode("file");
         setShareData({
           type: "file",
           code: data.code,
@@ -114,7 +159,7 @@ function App() {
         });
         showToast("File retrieved");
       } else {
-        showToast("That code isn't a file transfer.", "error");
+        showToast("That transfer has no available content.", "error");
       }
     } catch {
       showToast(
@@ -128,6 +173,7 @@ function App() {
     setSelectedFile(null);
     setShareData(null);
     setUploadProgress(0);
+    setText("");
   }
 
   return (
@@ -138,7 +184,12 @@ function App() {
         <Header />
 
         <section className="workspace-card">
-          {!uploading && !shareData && (
+          <ModeSwitcher
+            mode={mode}
+            onModeChange={handleModeChange}
+          />
+
+          {mode === "file" && !uploading && !shareData && (
             <FileDropzone
               selectedFile={selectedFile}
               onFileSelected={handleFileSelected}
@@ -147,16 +198,23 @@ function App() {
             />
           )}
 
-          {uploading && (
-            <UploadProgress
-              progress={uploadProgress}
-              file={selectedFile}
+          {mode === "file" && uploading && (
+            <UploadProgress progress={uploadProgress} file={selectedFile} />
+          )}
+
+          {mode === "text" && !shareData && (
+            <TextEditor
+              value={text}
+              onChange={setText}
+              onGenerate={handleGenerateText}
+              loading={textLoading}
             />
           )}
           {!shareData && (
             <RetrieveTransfer
-              onRetrieve={handleRetrieveFile}
+              onRetrieve={handleRetrieveTransfer}
               loading={false}
+              mode={mode}
             />
           )}
           {shareData && (
