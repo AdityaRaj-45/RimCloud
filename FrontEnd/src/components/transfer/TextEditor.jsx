@@ -23,12 +23,12 @@ function TextEditor({ value, onChange, onGenerate, loading }) {
           <small>QUICK NOTE</small>
           <strong>Paste anything worth moving.</strong>
         </div>
-        <span className="char-count">{value.length} / 5000</span>
+        <span className="char-count">{value.length} / 1900000</span>
       </div>
 
       <textarea
         value={value}
-        maxLength={5000}
+        maxLength={1900000}
         onChange={(event) => onChange(event.target.value)}
         placeholder="Paste code, a link, a note, a command…"
       />
