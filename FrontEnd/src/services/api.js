@@ -36,32 +36,6 @@ export async function uploadFile(file, onProgress) {
   });
 }
 
-export async function createText(text) {
-  const response = await fetch(`${API_URL}/api/text`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ text }),
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to create text");
-  }
-
-  return response.json();
-}
-
-export async function getText(id) {
-  const response = await fetch(`${API_URL}/api/text/${id}`);
-
-  if (!response.ok) {
-    throw new Error("failed to get text");
-  }
-
-  return response.json();
-}
-
 export async function getTransfer(code) {
   const response = await fetch(`${API_URL}/api/transfers/${code}`, {
     headers: { Accept: "application/json" },

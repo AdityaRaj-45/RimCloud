@@ -18,9 +18,7 @@ function renderFilePage(transfer, file) {
   const mimeType = file.mimeType || "application/octet-stream";
   const preview = mimeType.startsWith("image/")
     ? `<img src="${downloadUrl}?inline=1" alt="${name}">`
-    : mimeType.startsWith("video/")
-      ? `<video controls src="${downloadUrl}?inline=1"></video>`
-      : "";
+    : "";
 
   return `<!doctype html>
 <html lang="en">
@@ -70,7 +68,7 @@ export async function downloadFile(req, res, next) {
     if (!file) return res.status(404).json({ error: "File not found or transfer expired" });
     file.downloads += 1;
     await transfer.save();
-    if (req.query.inline === "1" && (file.mimeType?.startsWith("image/") || file.mimeType?.startsWith("video/"))) {
+    if (req.query.inline === "1" && file.mimeType?.startsWith("image/")) {
       res.type(file.mimeType);
       res.setHeader("Content-Disposition", `inline; filename*=UTF-8''${encodeURIComponent(file.originalName)}`);
       return res.sendFile(file.path, (error) => { if (error && !res.headersSent) next(error); });

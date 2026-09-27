@@ -4,7 +4,6 @@ import { Search } from "lucide-react";
 function RetrieveTransfer({
   onRetrieve,
   loading,
-  mode,
 }) {
   const [code, setCode] = useState("");
 
@@ -23,7 +22,7 @@ function RetrieveTransfer({
           <small>ALREADY HAVE A CODE?</small>
 
           <strong>
-            Retrieve {mode === "file" ? "a file" : "text"}
+            Retrieve a file
           </strong>
         </div>
       </div>
@@ -38,7 +37,7 @@ function RetrieveTransfer({
           onChange={(event) =>
             setCode(event.target.value)
           }
-          placeholder={`Enter ${mode === "file" ? "file" : "text"} access code`}
+          placeholder="Enter file access code"
           autoComplete="off"
         />
 

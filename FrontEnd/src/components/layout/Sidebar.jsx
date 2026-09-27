@@ -1,10 +1,6 @@
-import {
-  CloudUpload,
-  FileText,
-  ShieldCheck,
-} from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
-function Sidebar({ mode, onModeChange }) {
+function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="brand">
@@ -16,31 +12,6 @@ function Sidebar({ mode, onModeChange }) {
 
         <span>rimcloud</span>
       </div>
-
-      <div className="sidebar-label">
-        TRANSFER
-      </div>
-      <nav>
-        <button
-          className={`nav-item ${mode === "file" ? "active" : ""
-            }`}
-          onClick={() => onModeChange("file")}
-        >
-          <CloudUpload size={18} />
-
-          <span>Share files</span>
-        </button>
-
-        <button
-          className={`nav-item ${mode === "text" ? "active" : ""
-            }`}
-          onClick={() => onModeChange("text")}
-        >
-          <FileText size={18} />
-
-          <span>Share text</span>
-        </button>
-      </nav>
 
       <div className="sidebar-spacer" />
 

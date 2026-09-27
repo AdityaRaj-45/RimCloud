@@ -1,9 +1,7 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Sidebar from "./components/layout/Sidebar";
 import Header from "./components/layout/Header";
-import ModeSwitcher from "./components/transfer/ModeSwitcher";
 import FileDropzone from "./components/transfer/FileDropZone";
-import TextEditor from "./components/transfer/TextEditor";
 import RetrieveTransfer from "./components/transfer/RetrieveTransfer";
 import UploadProgress from "./components/transfer/UploadProgress";
 import ShareResult from "./components/transfer/ShareResult";
@@ -11,7 +9,6 @@ import Toast from "./components/ui/Toast";
 
 import {
   uploadFile,
-  createText,
   getTransfer,
 } from "./services/api";
 
@@ -19,8 +16,6 @@ import "./App.css";
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
 function App() {
-  const [mode, setMode] = useState("file");
-
   const [selectedFile, setSelectedFile] = useState(null);
 
   const [uploading, setUploading] = useState(false);
@@ -28,104 +23,8 @@ function App() {
 
   const [shareData, setShareData] = useState(null);
 
-  const [text, setText] = useState("");
-  const [textLoading, setTextLoading] = useState(false);
-
   const [toast, setToast] = useState(null);
 
-  useEffect(() => {
-  function handleCopyCut(event) {
-    const target = event.target;
-
-    // Allow copy/cut only inside the main text editor textarea
-    if (
-      target instanceof HTMLTextAreaElement &&
-      target.closest(".text-editor")
-    ) {
-      return;
-    }
-
-    event.preventDefault();
-  }
-
-  function handleContextMenu(event) {
-    const target = event.target;
-
-    // Allow right-click only inside the text editor
-    if (
-      target instanceof HTMLTextAreaElement &&
-      target.closest(".text-editor")
-    ) {
-      return;
-    }
-
-    event.preventDefault();
-  }
-
-  function handleKeyboard(event) {
-    const target = event.target;
-
-    // Allow shortcuts inside the text editor
-    if (
-      target instanceof HTMLTextAreaElement &&
-      target.closest(".text-editor")
-    ) {
-      return;
-    }
-
-    const key = event.key.toLowerCase();
-
-    const copyOrCut =
-      (event.ctrlKey || event.metaKey) &&
-      (key === "c" || key === "x");
-
-    if (copyOrCut) {
-      event.preventDefault();
-    }
-  }
-
-  document.addEventListener(
-    "copy",
-    handleCopyCut
-  );
-
-  document.addEventListener(
-    "cut",
-    handleCopyCut
-  );
-
-  document.addEventListener(
-    "contextmenu",
-    handleContextMenu
-  );
-
-  document.addEventListener(
-    "keydown",
-    handleKeyboard
-  );
-
-  return () => {
-    document.removeEventListener(
-      "copy",
-      handleCopyCut
-    );
-
-    document.removeEventListener(
-      "cut",
-      handleCopyCut
-    );
-
-    document.removeEventListener(
-      "contextmenu",
-      handleContextMenu
-    );
-
-    document.removeEventListener(
-      "keydown",
-      handleKeyboard
-    );
-  };
-}, []);
   function showToast(message, type = "success") {
     setToast({
       message,
@@ -135,13 +34,6 @@ function App() {
     setTimeout(() => {
       setToast(null);
     }, 2500);
-  }
-
-  function handleModeChange(newMode) {
-    setMode(newMode);
-    setShareData(null);
-    setSelectedFile(null);
-    setUploadProgress(0);
   }
 
   async function handleFileSelected(file) {
@@ -201,40 +93,7 @@ function App() {
     }
   }
 
-  async function handleGenerateText() {
-    const trimmedText = text.trim();
-
-    if (!trimmedText) {
-      showToast("Enter some text first", "error");
-      return;
-    }
-
-    setTextLoading(true);
-
-    try {
-      const data = await createText(trimmedText);
-
-      setShareData({
-        type: "text",
-        code: data.code,
-        qrCode: data.qrCode,
-        url: data.url,
-      });
-
-      showToast("Access code generated");
-    } catch (error) {
-      console.error(error);
-
-      showToast(
-        "Couldn't generate access code",
-        "error"
-      );
-    } finally {
-      setTextLoading(false);
-    }
-  }
-
-  async function handleRetrieveText(code) {
+  async function handleRetrieveFile(code) {
     if (!code.trim()) {
       showToast("Enter an access code", "error");
       return;
@@ -243,12 +102,8 @@ function App() {
     try {
       const data = await getTransfer(code.trim());
 
-      if (data.type === "text") {
-        setMode("text");
-        setText(data.text);
-      } else if (data.type === "file" && data.files?.[0]) {
+      if (data.type === "file" && data.files?.[0]) {
         const file = data.files[0];
-        setMode("file");
         setShareData({
           type: "file",
           code: data.code,
@@ -257,9 +112,10 @@ function App() {
           fileSize: file.size,
           downloadUrl: file.downloadUrl,
         });
+        showToast("File retrieved");
+      } else {
+        showToast("That code isn't a file transfer.", "error");
       }
-
-      showToast(data.type === "file" ? "File retrieved" : "Text retrieved");
     } catch {
       showToast(
         "That code doesn't exist or has expired.",
@@ -272,58 +128,35 @@ function App() {
     setSelectedFile(null);
     setShareData(null);
     setUploadProgress(0);
-    setText("");
   }
 
   return (
     <div className="app-shell">
-      <Sidebar
-        mode={mode}
-        onModeChange={handleModeChange}
-      />
+      <Sidebar />
 
       <main className="main-content">
         <Header />
 
         <section className="workspace-card">
-          <ModeSwitcher
-            mode={mode}
-            onModeChange={handleModeChange}
-          />
-
-          {mode === "file" && (
-            <>
-              {!uploading && !shareData && (
-                <FileDropzone
-                  selectedFile={selectedFile}
-                  onFileSelected={handleFileSelected}
-                  onUpload={handleUpload}
-                  onRemove={() => setSelectedFile(null)}
-                />
-              )}
-
-              {uploading && (
-                <UploadProgress
-                  progress={uploadProgress}
-                  file={selectedFile}
-                />
-              )}
-            </>
+          {!uploading && !shareData && (
+            <FileDropzone
+              selectedFile={selectedFile}
+              onFileSelected={handleFileSelected}
+              onUpload={handleUpload}
+              onRemove={() => setSelectedFile(null)}
+            />
           )}
 
-          {mode === "text" && !shareData && (
-            <TextEditor
-              value={text}
-              onChange={setText}
-              onGenerate={handleGenerateText}
-              loading={textLoading}
+          {uploading && (
+            <UploadProgress
+              progress={uploadProgress}
+              file={selectedFile}
             />
           )}
           {!shareData && (
             <RetrieveTransfer
-              onRetrieve={handleRetrieveText}
+              onRetrieve={handleRetrieveFile}
               loading={false}
-              mode={mode}
             />
           )}
           {shareData && (
