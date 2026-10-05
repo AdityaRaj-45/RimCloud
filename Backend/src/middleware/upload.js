@@ -10,4 +10,10 @@ const storage = multer.diskStorage({
   destination: (_req, _file, callback) => callback(null, storageDir),
   filename: (_req, file, callback) => callback(null, `${crypto.randomUUID()}${path.extname(file.originalname)}`),
 });
-export const upload = multer({ storage, limits: { fileSize: env.maxFileSizeMb * 1024 * 1024 } });
+export const upload = multer({
+  storage,
+  limits: {
+    fileSize: env.maxFileSizeMb * 1024 * 1024,
+    files: 100,
+  },
+});

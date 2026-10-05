@@ -3,7 +3,7 @@ import {
   LoaderCircle,
 } from "lucide-react";
 
-function UploadProgress({ progress, file }) {
+function UploadProgress({ progress, files }) {
   return (
     <div className="upload-progress">
       <div className="progress-header">
@@ -16,7 +16,9 @@ function UploadProgress({ progress, file }) {
             <small>TRANSFERRING</small>
 
             <strong>
-              {file?.name || "Uploading file…"}
+              {files?.length
+                ? `Uploading ${files.length} file${files.length !== 1 ? "s" : ""}`
+                : "Uploading files…"}
             </strong>
           </div>
         </div>

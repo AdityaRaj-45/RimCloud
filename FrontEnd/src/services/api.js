@@ -1,11 +1,15 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
-export async function uploadFile(file, onProgress) {
+export async function uploadFiles(files, onProgress) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     const formData = new FormData();
 
     xhr.open("POST", `${API_URL}/api/files`);
+
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
 
     xhr.upload.onprogress = (event) => {
       if (event.lengthComputable && onProgress) {
@@ -24,14 +28,18 @@ export async function uploadFile(file, onProgress) {
         return;
       }
 
-      reject(new Error("Upload failed"));
+      try {
+        const payload = JSON.parse(xhr.responseText);
+        reject(new Error(payload.error || "Upload failed"));
+      } catch {
+        reject(new Error(xhr.responseText || "Upload failed"));
+      }
     };
 
     xhr.onerror = () => {
       reject(new Error("Network error"));
     };
 
-    formData.append("file", file);
     xhr.send(formData);
   });
 }

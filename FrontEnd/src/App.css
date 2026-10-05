@@ -322,20 +322,53 @@
   font-size: 9px;
 }
 /* Selected File */
-.selected-file {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 13px;
-  padding: 18px;
+.selected-files {
+  padding: 16px;
   border: 1px solid var(--border-light);
   border-radius: 15px;
   background: #14171b;
 }
+.selected-files-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.selected-files-header strong,
+.selected-files-header span {
+  display: block;
+}
+.selected-files-header strong {
+  color: var(--text-bright);
+  font-size: 12px;
+}
+.selected-files-header span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 9px;
+}
+.selected-files-list {
+  display: grid;
+  gap: 8px;
+  max-height: 280px;
+  margin: 14px 0;
+  overflow: auto;
+}
+.selected-file {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #171b20;
+}
 .file-icon,
 .result-file-icon {
-  width: 48px;
-  height: 48px;
+  width: 38px;
+  height: 38px;
   display: grid;
   place-items: center;
   border-radius: 13px;
@@ -347,7 +380,7 @@
   display: block;
 }
 .file-info strong {
-  max-width: 400px;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -377,7 +410,7 @@
   background: rgba(184, 50, 69, 0.06);
 }
 .upload-btn {
-  grid-column: 1 / -1;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -801,6 +834,27 @@
 .file-result {
   margin-bottom: 15px;
 }
+.files-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 9px;
+}
+.files-summary strong {
+  color: var(--text);
+  font-size: 11px;
+}
+.files-summary span {
+  color: var(--muted);
+  font-size: 9px;
+}
+.result-files {
+  display: grid;
+  gap: 8px;
+  max-height: 360px;
+  overflow: auto;
+}
 .result-file {
   display: flex;
   align-items: center;
@@ -1041,6 +1095,9 @@
   }
   .result-file {
     flex-wrap: wrap;
+  }
+  .selected-files {
+    padding: 12px;
   }
   .result-file > div:nth-child(2) {
     width: calc(100% - 54px);

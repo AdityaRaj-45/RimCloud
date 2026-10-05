@@ -10,17 +10,18 @@ import ShareResult from "./components/transfer/ShareResult";
 import Toast from "./components/ui/Toast";
 
 import {
-  uploadFile,
+  uploadFiles,
   createText,
   getTransfer,
 } from "./services/api";
 
 import "./App.css";
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
+const MAX_FILES = 100;
 
 function App() {
   const [mode, setMode] = useState("file");
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -45,30 +46,32 @@ function App() {
   function handleModeChange(newMode) {
     setMode(newMode);
     setShareData(null);
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setUploadProgress(0);
   }
 
-  async function handleFileSelected(file) {
-    if (!file) return;
+  function handleFilesSelected(files) {
+    if (!files || files.length === 0) return;
 
-    if (file.size > MAX_FILE_SIZE) {
-      showToast(
-        "File is too large. Maximum size is 100 MB.",
-        "error"
-      );
+    if (files.length > MAX_FILES) {
+      showToast("You can select a maximum of 100 files.", "error");
       return;
     }
 
-    setSelectedFile(file);
-    setShareData(null);
+    const oversizedFile = files.find((file) => file.size > MAX_FILE_SIZE);
+    if (oversizedFile) {
+      showToast(`${oversizedFile.name} is larger than 100 MB.`, "error");
+      return;
+    }
 
-    showToast("File selected");
+    setSelectedFiles(files);
+    setShareData(null);
+    showToast(`${files.length} file${files.length !== 1 ? "s" : ""} selected`);
   }
 
   async function handleUpload() {
-    if (!selectedFile) {
-      showToast("Choose a file first", "error");
+    if (selectedFiles.length === 0) {
+      showToast("Choose at least one file first", "error");
       return;
     }
 
@@ -76,8 +79,8 @@ function App() {
     setUploadProgress(0);
 
     try {
-      const data = await uploadFile(
-        selectedFile,
+      const data = await uploadFiles(
+        selectedFiles,
         (progress) => {
           setUploadProgress(progress);
         }
@@ -88,19 +91,14 @@ function App() {
         code: data.code,
         qrCode: data.qrCode,
         url: data.url,
-        fileName: selectedFile.name,
-        fileSize: selectedFile.size,
-        downloadUrl: data.files?.[0]?.downloadUrl,
+        files: data.files || [],
       });
 
       showToast("Upload complete");
     } catch (error) {
       console.error(error);
 
-      showToast(
-        "Upload failed. Please try again.",
-        "error"
-      );
+      showToast(error.message || "Upload failed. Please try again.", "error");
     } finally {
       setUploading(false);
     }
@@ -146,18 +144,16 @@ function App() {
         setMode("text");
         setText(data.text || "");
         showToast("Text retrieved");
-      } else if (data.type === "file" && data.files?.[0]) {
-        const file = data.files[0];
+      } else if (data.type === "file" && data.files?.length) {
         setMode("file");
         setShareData({
           type: "file",
           code: data.code,
-          url: `${import.meta.env.VITE_API_URL}/api/transfers/${data.code}`,
-          fileName: file.name,
-          fileSize: file.size,
-          downloadUrl: file.downloadUrl,
+          url: `${import.meta.env.VITE_API_URL}/api/transfers/${encodeURIComponent(data.code)}`,
+          qrCode: null,
+          files: data.files,
         });
-        showToast("File retrieved");
+        showToast(`${data.files.length} file${data.files.length !== 1 ? "s" : ""} retrieved`);
       } else {
         showToast("That transfer has no available content.", "error");
       }
@@ -170,7 +166,7 @@ function App() {
   }
 
   function handleReset() {
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setShareData(null);
     setUploadProgress(0);
     setText("");
@@ -191,15 +187,15 @@ function App() {
 
           {mode === "file" && !uploading && !shareData && (
             <FileDropzone
-              selectedFile={selectedFile}
-              onFileSelected={handleFileSelected}
+              selectedFiles={selectedFiles}
+              onFilesSelected={handleFilesSelected}
               onUpload={handleUpload}
-              onRemove={() => setSelectedFile(null)}
+              onRemove={() => setSelectedFiles([])}
             />
           )}
 
           {mode === "file" && uploading && (
-            <UploadProgress progress={uploadProgress} file={selectedFile} />
+            <UploadProgress progress={uploadProgress} files={selectedFiles} />
           )}
 
           {mode === "text" && !shareData && (

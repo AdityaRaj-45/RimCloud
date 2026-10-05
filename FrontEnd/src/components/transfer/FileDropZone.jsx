@@ -8,10 +8,9 @@ import {
   Weight,
   Upload,
 } from "lucide-react";
-
 function FileDropzone({
-  selectedFile,
-  onFileSelected,
+  selectedFiles,
+  onFilesSelected,
   onUpload,
   onRemove,
 }) {
@@ -28,18 +27,19 @@ function FileDropzone({
 
     setDragging(false);
 
-    const file = event.dataTransfer.files?.[0];
+    const files = Array.from(event.dataTransfer.files || []);
 
-    if (file) {
-      onFileSelected(file);
+    if (files.length) {
+      onFilesSelected(files);
     }
   }
 
   function handleInput(event) {
-    const file = event.target.files?.[0];
+    const files = Array.from(event.target.files || []);
+    event.target.value = "";
 
-    if (file) {
-      onFileSelected(file);
+    if (files.length) {
+      onFilesSelected(files);
     }
   }
 
@@ -57,7 +57,7 @@ function FileDropzone({
 
   return (
     <div>
-      {!selectedFile ? (
+      {selectedFiles.length === 0 ? (
         <div
           className={`drop-zone ${
             dragging ? "dragged" : ""
@@ -73,6 +73,7 @@ function FileDropzone({
           <input
             ref={inputRef}
             type="file"
+            multiple
             hidden
             onChange={handleInput}
           />
@@ -84,8 +85,8 @@ function FileDropzone({
           <div className="drop-copy">
             <h2>
               {dragging
-                ? "Drop it here"
-                : "Drop your file here"}
+                ? "Drop files here"
+                : "Drop your files here"}
             </h2>
 
             <p>
@@ -111,31 +112,47 @@ function FileDropzone({
 
             <span>
               <Weight size={13} />
-              Maximum 100 MB
+              Up to 100 files · 100 MB each
             </span>
           </div>
         </div>
       ) : (
-        <div className="selected-file">
-          <div className="file-icon">
-            <File size={24} />
+        <div className="selected-files">
+          <div className="selected-files-header">
+            <div>
+              <strong>
+                {selectedFiles.length} file{selectedFiles.length !== 1 ? "s" : ""} selected
+              </strong>
+              <span>Maximum 100 files · 100 MB each</span>
+            </div>
+
+            <button
+              className="remove-file"
+              onClick={onRemove}
+              type="button"
+              aria-label="Remove all files"
+            >
+              <X size={17} />
+            </button>
           </div>
 
-          <div className="file-info">
-            <strong>{selectedFile.name}</strong>
+          <div className="selected-files-list">
+            {selectedFiles.map((file, index) => (
+              <div
+                className="selected-file"
+                key={`${file.name}-${file.lastModified}-${index}`}
+              >
+                <div className="file-icon">
+                  <File size={20} />
+                </div>
 
-            <span>
-              {formatSize(selectedFile.size)}
-            </span>
+                <div className="file-info">
+                  <strong>{file.name}</strong>
+                  <span>{formatSize(file.size)}</span>
+                </div>
+              </div>
+            ))}
           </div>
-
-          <button
-            className="remove-file"
-            onClick={onRemove}
-            type="button"
-          >
-            <X size={17} />
-          </button>
 
           <button
             className="upload-btn"
@@ -143,8 +160,7 @@ function FileDropzone({
             type="button"
           >
             <Upload size={17} />
-
-            Upload file
+            Upload {selectedFiles.length} file{selectedFiles.length !== 1 ? "s" : ""}
           </button>
         </div>
       )}

@@ -8,6 +8,14 @@ import {
   RotateCcw,
   Link,
 } from "lucide-react";
+
+function formatSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
+}
+
 function ShareResult({
   data,
   onReset,
@@ -57,28 +65,34 @@ function ShareResult({
 
       {data.type === "file" && (
         <div className="file-result">
-          <div className="result-file">
-            <div className="result-file-icon">
-              <Link size={20} />
-            </div>
+          <div className="files-summary">
+            <strong>
+              {data.files?.length || 0} file{data.files?.length !== 1 ? "s" : ""} ready
+            </strong>
+            <span>Ready for sharing</span>
+          </div>
 
-            <div>
-              <strong>{data.fileName}</strong>
+          <div className="result-files">
+            {data.files?.map((file) => (
+              <div className="result-file" key={file.id}>
+                <div className="result-file-icon">
+                  <Link size={20} />
+                </div>
 
-              <span>
-                Ready for sharing
-              </span>
-            </div>
+                <div>
+                  <strong>{file.name}</strong>
+                  <span>{formatSize(file.size)}</span>
+                </div>
 
-            {data.downloadUrl && (
-              <a
-                className="file-download-btn"
-                href={data.downloadUrl}
-              >
-                <Download size={14} />
-                Download
-              </a>
-            )}
+                <a
+                  className="file-download-btn"
+                  href={file.downloadUrl}
+                >
+                  <Download size={14} />
+                  Download
+                </a>
+              </div>
+            ))}
           </div>
         </div>
       )}

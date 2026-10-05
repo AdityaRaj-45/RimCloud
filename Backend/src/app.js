@@ -13,7 +13,21 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: "https://rimcloud.vercel.app",
+  origin: (origin, callback) => {
+    const allowedOrigins = ["http://localhost:5173", "http://localhost:3000", "http://localhost:4173"];
+
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+      return;
+    }
+
+    if (process.env.NODE_ENV === "production" && origin === "https://rimcloud.vercel.app") {
+      callback(null, true);
+      return;
+    }
+
+    callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
