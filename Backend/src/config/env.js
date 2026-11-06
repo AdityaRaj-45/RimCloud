@@ -12,7 +12,7 @@ export const env = {
   apiUrl: (process.env.PUBLIC_API_URL || "http://localhost:5000")
     .replace(/\/$/, ""),
 
-  ttlHours: Number(process.env.TRANSFER_TTL_HOURS || 24),
+  ttlHours: Number(process.env.TRANSFER_TTL_HOURS || 1),
 
   maxFileSizeMb: Number(process.env.MAX_FILE_SIZE_MB || 100),
   awsRegion:process.env.AWS_REGION||"ap-south-1",
