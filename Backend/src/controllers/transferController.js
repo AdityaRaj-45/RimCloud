@@ -1,35 +1,38 @@
-import fs from "node:fs";
 import Transfer from "../models/Transfer.js";
 import { serialize } from "../services/transferService.js";
+import { createDownloadUrl } from "../services/s3Service.js";
 
 function escapeHtml(value) {
-  return String(value).replace(/[&<>\'"]/g, (character) => ({
+  return String(value).replace(/[&<>'"]/g, (character) => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
     "'": "&#39;",
-    "\"": "&quot;",
+    '"': "&quot;",
   })[character]);
 }
 
 function renderFilePage(transfer) {
-  const files = transfer.files.map((file, index) => {
-    const downloadUrl = `/api/transfers/${encodeURIComponent(transfer.code)}/files/${encodeURIComponent(file._id.toString())}/download`;
-    const name = escapeHtml(file.originalName);
-    const mimeType = file.mimeType || "application/octet-stream";
-    const preview = index === 0 && mimeType.startsWith("image/")
-      ? `<img src="${downloadUrl}?inline=1" alt="${name}">`
-      : index === 0 && mimeType.startsWith("video/")
-        ? `<video controls playsinline preload="metadata" src="${downloadUrl}?inline=1"></video>`
-        : "";
+  const files = transfer.files
+    .map((file, index) => {
+      const downloadUrl = `/api/transfers/${encodeURIComponent(transfer.code)}/files/${encodeURIComponent(file._id.toString())}/download`;
+      const name = escapeHtml(file.originalName);
+      const mimeType = file.mimeType || "application/octet-stream";
+      const preview =
+        index === 0 && mimeType.startsWith("image/")
+          ? `<img src="${downloadUrl}?inline=1" alt="${name}">`
+          : index === 0 && mimeType.startsWith("video/")
+            ? `<video controls playsinline preload="metadata" src="${downloadUrl}?inline=1"></video>`
+            : "";
 
-    return `<article class="file-card">
+      return `<article class="file-card">
       <h2>${name}</h2>
       <p class="meta">${escapeHtml(mimeType)} · ${file.size} bytes</p>
       ${preview ? `<div class="preview">${preview}</div>` : ""}
       <a class="download" href="${downloadUrl}" download>Download file</a>
     </article>`;
-  }).join("");
+    })
+    .join("");
 
   return `<!doctype html>
 <html lang="en">
@@ -66,25 +69,66 @@ function renderFilePage(transfer) {
 
 export async function getTransfer(req, res, next) {
   try {
-    const transfer = await Transfer.findOne({ code: req.params.code, expiresAt: { $gt: new Date() } });
-    if (!transfer) return res.status(404).json({ error: "Invalid or expired access code" });
+    const transfer = await Transfer.findOne({
+      code: req.params.code,
+      status: "active",
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!transfer) {
+      return res.status(404).json({ error: "Invalid or expired access code" });
+    }
+
     const acceptsHtml = req.get("accept")?.includes("text/html");
-    if (acceptsHtml && transfer.type === "file" && transfer.files.length) return res.type("html").send(renderFilePage(transfer));
-    return res.json({ ...serialize(transfer), text: transfer.type === "text" ? transfer.text : undefined });
-  } catch (error) { next(error); }
+    if (acceptsHtml && transfer.type === "file" && transfer.files.length) {
+      return res.type("html").send(renderFilePage(transfer));
+    }
+
+    return res.json({
+      ...serialize(transfer),
+      text: transfer.type === "text" ? transfer.text : undefined,
+    });
+  } catch (error) {
+    next(error);
+  }
 }
+
 export async function downloadFile(req, res, next) {
   try {
-    const transfer = await Transfer.findOne({ code: req.params.code, expiresAt: { $gt: new Date() } });
-    const file = transfer?.files.id(req.params.fileId);
-    if (!file) return res.status(404).json({ error: "File not found or transfer expired" });
+    const transfer = await Transfer.findOne({
+      code: req.params.code,
+      status: "active",
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!transfer) {
+      return res.status(404).json({ error: "File not found or transfer expired" });
+    }
+
+    const file = transfer.files.find(
+      (f) => f._id.toString() === req.params.fileId
+    );
+
+    if (!file) {
+      return res.status(404).json({ error: "File not found" });
+    }
+
+    const inline = req.query.inline === "1";
+
+    // Generate short-lived S3 download URL
+    const downloadUrl = await createDownloadUrl(
+      file.s3Key,
+      file.originalName,
+      file.mimeType,
+      inline
+    );
+
     file.downloads += 1;
     await transfer.save();
-    if (req.query.inline === "1" && (file.mimeType?.startsWith("image/") || file.mimeType?.startsWith("video/"))) {
-      res.type(file.mimeType);
-      res.setHeader("Content-Disposition", `inline; filename*=UTF-8''${encodeURIComponent(file.originalName)}`);
-      return res.sendFile(file.path, (error) => { if (error && !res.headersSent) next(error); });
-    }
-    return res.download(file.path, file.originalName, (error) => { if (error && !res.headersSent) next(error); });
-  } catch (error) { next(error); }
+
+    // Redirect the browser directly to S3
+    return res.redirect(302, downloadUrl);
+  } catch (error) {
+    next(error);
+  }
 }

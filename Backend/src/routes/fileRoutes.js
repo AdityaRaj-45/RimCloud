@@ -1,7 +1,12 @@
 import { Router } from "express";
-import { upload } from "../middleware/upload.js";
-import { uploadFile, sendFileEmail } from "../controllers/fileController.js";
+import {
+  getUploadUrls,
+  completeUpload,
+  sendFileEmail,
+} from "../controllers/fileController.js";
 const router = Router();
-router.post("/", upload.array("files", 100), uploadFile);
+router.post("/presign", getUploadUrls);
+router.post("/:code/complete", completeUpload);
 router.post("/send", sendFileEmail);
+
 export default router;

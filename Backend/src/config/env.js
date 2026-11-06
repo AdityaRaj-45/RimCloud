@@ -15,6 +15,14 @@ export const env = {
   ttlHours: Number(process.env.TRANSFER_TTL_HOURS || 24),
 
   maxFileSizeMb: Number(process.env.MAX_FILE_SIZE_MB || 100),
-
-  storageDir: process.env.STORAGE_DIR || "./storage",
+  awsRegion:process.env.AWS_REGION||"ap-south-1",
+  awsAccessKeyId:process.env.AWS_ACCESS_KEY_ID,
+  awsSecretAccessKey:process.env.AWS_SECRET_ACCESS_KEY,
+  awsBucket:process.env.AWS_S3_BUCKET,
 };
+const requiredAwsKeys=["awsAccessKeyId","awsSecretAccessKey","awsBucket"];
+for(const key of requiredAwsKeys){
+  if(!env[key]){
+    console.warn(`[Warning] Missing Enviroment variable for ${key}.S3 Operations will fail`);
+  }
+}

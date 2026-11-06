@@ -1,8 +1,7 @@
-import fs from "node:fs/promises";
-import path from "node:path";
 import Transfer from "../models/Transfer.js";
 import { env } from "../config/env.js";
 import { generateCode } from "../utils/code.js";
+import { deleteS3Objects } from "./s3Service.js";
 
 export async function uniqueCode() {
   for (let attempt = 0; attempt < 10; attempt += 1) {
@@ -13,37 +12,51 @@ export async function uniqueCode() {
   throw new Error("Could not generate a unique access code");
 }
 
-function expiry() { return new Date(Date.now() + env.ttlHours * 60 * 60 * 1000); }
-export async function createFileTransfer(files) {
-  return Transfer.create({
-    code: await uniqueCode(),
-    type: "file",
-    expiresAt: expiry(),
+function expiry() {
+  return new Date(Date.now() + env.ttlHours * 60 * 60 * 1000);
+}
 
-    files: files.map((file) => ({
-      originalName: file.originalname,
-      storedName: file.filename,
-      mimeType: file.mimetype || "application/octet-stream",
+export async function createFileTransfer(code, uploads) {
+  return Transfer.create({
+    code,
+    type: "file",
+    status: "pending",
+    expiresAt: expiry(),
+    files: uploads.map((file) => ({
+      originalName: file.originalName,
+      s3Key: file.s3Key,
+      mimeType: file.mimeType || "application/octet-stream",
       size: file.size,
-      path: file.path,
+      downloads: 0,
     })),
   });
 }
 
 export async function createTextTransfer(text) {
-  return Transfer.create({ code: await uniqueCode(), type: "text", text, expiresAt: expiry() });
+  return Transfer.create({
+    code: await uniqueCode(),
+    type: "text",
+    status: "active",
+    text,
+    expiresAt: expiry(),
+  });
 }
 
-export function publicUrl(code) { return `${env.apiUrl}/api/transfers/${encodeURIComponent(code)}`; }
+export function publicUrl(code) {
+  return `${env.apiUrl}/api/transfers/${encodeURIComponent(code)}`;
+}
 
 export function serialize(transfer) {
   return {
     code: transfer.code,
     type: transfer.type,
+    status: transfer.status,
+    text: transfer.text,
     expiresAt: transfer.expiresAt,
-    files: transfer.files.map((file) => ({
+    files: (transfer.files || []).map((file) => ({
       id: file._id.toString(),
       name: file.originalName,
+      originalName: file.originalName,
       size: file.size,
       mimeType: file.mimeType,
       downloads: file.downloads,
@@ -53,17 +66,27 @@ export function serialize(transfer) {
 }
 
 export async function cleanupExpired() {
-  const expired = await Transfer.find({ expiresAt: { $lte: new Date() } }).lean();
-  const promises = expired.map(async (transfer) => {
-    for (const file of transfer.files) {
+  const expiredTransfers = await Transfer.find({
+    expiresAt: { $lte: new Date() },
+  });
+
+  for (const transfer of expiredTransfers) {
+    const keys = (transfer.files || [])
+      .map((file) => file.s3Key)
+      .filter(Boolean);
+
+    if (keys.length > 0) {
       try {
-        await fs.unlink(path.resolve(file.path));
+        await deleteS3Objects(keys);
       } catch (error) {
-        if (error.code !== "ENOENT") throw error;
+        console.error(`Failed to delete S3 objects for ${transfer.code}:`, error);
       }
     }
+
     await Transfer.deleteOne({ _id: transfer._id });
-  });
-  await Promise.all(promises);
-  if (expired.length) console.log(`Cleaned ${expired.length} expired transfer(s)`);
+  }
+
+  if (expiredTransfers.length) {
+    console.log(`Cleaned ${expiredTransfers.length} expired transfer(s)`);
+  }
 }

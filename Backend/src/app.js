@@ -12,26 +12,32 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({
-  origin: (origin, callback) => {
-    const allowedOrigins = ["http://localhost:5173", "http://localhost:3000", "http://localhost:4173"];
+// Combine configured origins with local dev defaults and your production domain
+const allowedOrigins = Array.from(
+  new Set([
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:4173',
+    'https://rimcloud.vercel.app',
+    ...(env.origins || []),
+  ])
+);
 
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-      return;
-    }
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
+    credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
-    if (process.env.NODE_ENV === "production" && origin === "https://rimcloud.vercel.app") {
-      callback(null, true);
-      return;
-    }
-
-    callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true,
-  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
 app.use(express.json({ limit: '2mb' }));
